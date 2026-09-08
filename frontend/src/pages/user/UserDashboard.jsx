@@ -236,19 +236,15 @@ export default function UserDashboard() {
               return (
                 <div key={b.id} className="flex gap-4 p-4 rounded-2xl border theme-border theme-card-subtle">
                   <div className="w-16 h-20 bg-slate-200 dark:bg-slate-800 rounded-xl overflow-hidden shrink-0 flex items-center justify-center">
-                    {b.bookCover ? (
-                      <img
-                        src={getBookCoverUrl(b.bookCover)}
-                        alt={b.bookTitle}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = DEFAULT_BOOK_COVER;
-                        }}
-                      />
-                    ) : (
-                      <BookOpenIcon className="w-6 h-6 text-slate-400" />
-                    )}
+                    <img
+                      src={getBookCoverUrl(b.bookCover, b.bookTitle)}
+                      alt={b.bookTitle}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = DEFAULT_BOOK_COVER;
+                      }}
+                    />
                   </div>
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
@@ -297,19 +293,15 @@ export default function UserDashboard() {
             >
               <div>
                 <div className="h-40 bg-slate-100 dark:bg-slate-800 rounded-xl overflow-hidden mb-3 relative flex items-center justify-center">
-                  {book.image ? (
-                    <img
-                      src={getBookCoverUrl(book.image)}
-                      alt={book.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = DEFAULT_BOOK_COVER;
-                      }}
-                    />
-                  ) : (
-                    <BookOpenIcon className="w-8 h-8 text-slate-300 dark:text-slate-600" />
-                  )}
+                  <img
+                    src={getBookCoverUrl(book.image, book.title)}
+                    alt={book.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = DEFAULT_BOOK_COVER;
+                    }}
+                  />
                   <span className={`absolute top-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${book.availableCopies > 0 ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300" : "bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-300"}`}>
                     {book.availableCopies > 0 ? `${book.availableCopies} in stock` : "Waitlist"}
                   </span>

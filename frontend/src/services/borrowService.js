@@ -1,29 +1,38 @@
 import api from "./api";
+import { getBookCoverUrl } from "./bookService";
+
+const formatBorrow = (b) => {
+  if (!b) return b;
+  return {
+    ...b,
+    bookCover: getBookCoverUrl(b.bookCover, b.bookTitle),
+  };
+};
 
 export const borrowService = {
   requestBorrow: async (bookId, notes = "") => {
     const res = await api.post("/borrow/request", { bookId, notes });
-    return res.data;
+    return formatBorrow(res.data);
   },
 
   returnBook: async (borrowId) => {
     const res = await api.put(`/borrow/${borrowId}/return`);
-    return res.data;
+    return formatBorrow(res.data);
   },
 
   getMyRequests: async () => {
     const res = await api.get("/borrow/my-requests");
-    return res.data;
+    return Array.isArray(res.data) ? res.data.map(formatBorrow) : [];
   },
 
   getMyActive: async () => {
     const res = await api.get("/borrow/my-active");
-    return res.data;
+    return Array.isArray(res.data) ? res.data.map(formatBorrow) : [];
   },
 
   getMyHistory: async () => {
     const res = await api.get("/borrow/my-history");
-    return res.data;
+    return Array.isArray(res.data) ? res.data.map(formatBorrow) : [];
   },
 
   // Admin methods

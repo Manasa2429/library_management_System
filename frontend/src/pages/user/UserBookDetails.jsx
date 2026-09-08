@@ -116,22 +116,15 @@ export default function UserBookDetails() {
           {/* Cover Column */}
           <div className="space-y-4">
             <div className="h-80 sm:h-96 bg-slate-100 rounded-2xl overflow-hidden relative shadow-md flex items-center justify-center">
-              {book.image ? (
-                <img
-                  src={getBookCoverUrl(book.image)}
-                  alt={book.title}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = DEFAULT_BOOK_COVER;
-                  }}
-                />
-              ) : (
-                <div className="text-slate-400 text-center p-4">
-                  <BookOpenIcon className="w-16 h-16 mx-auto text-slate-300 mb-2" />
-                  <span className="text-xs font-semibold">No Image Available</span>
-                </div>
-              )}
+              <img
+                src={getBookCoverUrl(book.image, book.title)}
+                alt={book.title}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = DEFAULT_BOOK_COVER;
+                }}
+              />
               <button
                 onClick={handleFavoriteToggle}
                 className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-rose-500 hover:scale-110 transition"

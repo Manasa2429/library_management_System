@@ -3,17 +3,79 @@ import api from "./api";
 export const DEFAULT_BOOK_COVER =
   "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop";
 
-export const getBookCoverUrl = (image) => {
-  if (!image || typeof image !== "string" || !image.trim()) {
-    return DEFAULT_BOOK_COVER;
+export const BOOK_COVER_MAP = {
+  "1984": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop",
+  "clean code": "https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?q=80&w=800&auto=format&fit=crop",
+  "sapiens": "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=800&auto=format&fit=crop",
+  "pragmatic": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop",
+  "atomic habits": "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
+  "designing data": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop",
+  "mockingbird": "https://images.unsplash.com/photo-1476275466078-4007374efbbe?q=80&w=800&auto=format&fit=crop",
+  "gatsby": "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
+  "animal farm": "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop",
+  "brave new world": "https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=800&auto=format&fit=crop",
+  "cosmos": "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop",
+  "history of time": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop",
+  "psychology of money": "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop",
+  "thinking, fast": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=800&auto=format&fit=crop",
+  "deep work": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop",
+  "zero to one": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop",
+  "algorithms": "https://images.unsplash.com/photo-1509228468518-180dd4864904?q=80&w=800&auto=format&fit=crop",
+  "design patterns": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop",
+  "selfish gene": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=800&auto=format&fit=crop",
+  "steve jobs": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=800&auto=format&fit=crop"
+};
+
+export const CURATED_COVERS = [
+  "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1476275466078-4007374efbbe?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop",
+  "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop",
+];
+
+export const getBookCoverUrl = (image, title = "") => {
+  if (image && typeof image === "string" && image.trim().length > 0) {
+    const clean = image.trim();
+    if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("data:")) {
+      return clean;
+    }
+    const apiBase = process.env.REACT_APP_API_URL || "https://library-management-system-zrup.onrender.com/api";
+    const backendBase = apiBase.replace(/\/api\/?$/, "");
+    return `${backendBase}${clean.startsWith("/") ? "" : "/"}${clean}`;
   }
-  const clean = image.trim();
-  if (clean.startsWith("http://") || clean.startsWith("https://") || clean.startsWith("data:")) {
-    return clean;
+
+  // If no image, match by title
+  if (title && typeof title === "string") {
+    const lower = title.toLowerCase();
+    for (const [key, url] of Object.entries(BOOK_COVER_MAP)) {
+      if (lower.includes(key)) {
+        return url;
+      }
+    }
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+      hash = (hash + title.charCodeAt(i)) % CURATED_COVERS.length;
+    }
+    return CURATED_COVERS[hash];
   }
-  const apiBase = process.env.REACT_APP_API_URL || "http://localhost:8081/api";
-  const backendBase = apiBase.replace(/\/api\/?$/, "");
-  return `${backendBase}${clean.startsWith("/") ? "" : "/"}${clean}`;
+
+  return DEFAULT_BOOK_COVER;
+};
+
+export const formatBook = (b) => {
+  if (!b) return b;
+  return {
+    ...b,
+    image: getBookCoverUrl(b.image, b.title),
+  };
 };
 
 export const SAMPLE_BOOKS = [
@@ -144,32 +206,32 @@ export const bookService = {
     try {
       const res = await api.get("/books");
       if (Array.isArray(res.data) && res.data.length > 0) {
-        return res.data.map((b, idx) => ({
-          ...b,
-          image: b.image || SAMPLE_BOOKS[idx % SAMPLE_BOOKS.length].image
-        }));
+        return res.data.map(formatBook);
       }
-      return SAMPLE_BOOKS;
+      return SAMPLE_BOOKS.map(formatBook);
     } catch (e) {
-      return SAMPLE_BOOKS;
+      return SAMPLE_BOOKS.map(formatBook);
     }
   },
 
   getById: async (id) => {
     try {
       const res = await api.get(`/books/${id}`);
-      return res.data;
+      return formatBook(res.data);
     } catch (e) {
       const found = SAMPLE_BOOKS.find((b) => b.id === id);
-      if (found) return found;
-      return SAMPLE_BOOKS[0];
+      if (found) return formatBook(found);
+      return formatBook(SAMPLE_BOOKS[0]);
     }
   },
 
   search: async (query) => {
     try {
       const res = await api.get(`/books/search?q=${encodeURIComponent(query)}`);
-      return res.data;
+      if (Array.isArray(res.data)) {
+        return res.data.map(formatBook);
+      }
+      return [];
     } catch (e) {
       const q = query.toLowerCase();
       return SAMPLE_BOOKS.filter(
@@ -177,35 +239,43 @@ export const bookService = {
           b.title.toLowerCase().includes(q) ||
           b.authorName.toLowerCase().includes(q) ||
           b.categoryName.toLowerCase().includes(q)
-      );
+      ).map(formatBook);
     }
   },
 
   getFeatured: async () => {
     try {
       const res = await api.get("/books/featured");
-      if (Array.isArray(res.data) && res.data.length > 0) return res.data;
-      return SAMPLE_BOOKS.filter((b) => b.featured);
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data.map(formatBook);
+      }
+      return SAMPLE_BOOKS.filter((b) => b.featured).map(formatBook);
     } catch (e) {
-      return SAMPLE_BOOKS.filter((b) => b.featured);
+      return SAMPLE_BOOKS.filter((b) => b.featured).map(formatBook);
     }
   },
 
   getRecent: async () => {
     try {
       const res = await api.get("/books/recent");
-      return res.data;
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        return res.data.map(formatBook);
+      }
+      return SAMPLE_BOOKS.slice(0, 4).map(formatBook);
     } catch (e) {
-      return SAMPLE_BOOKS.slice(0, 4);
+      return SAMPLE_BOOKS.slice(0, 4).map(formatBook);
     }
   },
 
   getByCategory: async (categoryId) => {
     try {
       const res = await api.get(`/books/category/${categoryId}`);
-      return res.data;
+      if (Array.isArray(res.data)) {
+        return res.data.map(formatBook);
+      }
+      return [];
     } catch (e) {
-      return SAMPLE_BOOKS.filter((b) => b.categoryId === categoryId);
+      return SAMPLE_BOOKS.filter((b) => b.categoryId === categoryId).map(formatBook);
     }
   },
 

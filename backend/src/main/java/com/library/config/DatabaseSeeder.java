@@ -83,6 +83,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         seedReaders();
         seedSettings();
         seedSampleBooks();
+        ensureBookImages();
         seedSampleFines();
     }
 
@@ -364,5 +365,65 @@ public class DatabaseSeeder implements CommandLineRunner {
         );
         fineRepository.save(fine);
         logger.info("Sample fine seeded for reader '{}': ₹{} on book '{}'", reader.getEmail(), fineAmount, book.getTitle());
+    }
+
+    private void ensureBookImages() {
+        Map<String, String> coverMap = Map.ofEntries(
+            Map.entry("1984", "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Clean Code", "https://images.unsplash.com/photo-1532012164546-f432f2e3edd4?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Sapiens", "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Pragmatic", "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Designing Data", "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Mockingbird", "https://images.unsplash.com/photo-1476275466078-4007374efbbe?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Gatsby", "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Animal Farm", "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Brave New World", "https://images.unsplash.com/photo-1495640388908-05fa85288e61?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Cosmos", "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Brief History of Time", "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Atomic Habits", "https://images.unsplash.com/photo-1499750310107-5fef28a66643?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Psychology of Money", "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Thinking, Fast and Slow", "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Deep Work", "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?q=80&w=800&auto=format&fit=crop"),
+            Map.entry("Zero to One", "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop")
+        );
+
+        String defaultCover = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop";
+
+        for (Book b : bookRepository.findAll()) {
+            if (b.getImage() == null || b.getImage().trim().isEmpty()) {
+                String chosen = defaultCover;
+                for (var entry : coverMap.entrySet()) {
+                    if (b.getTitle() != null && b.getTitle().toLowerCase().contains(entry.getKey().toLowerCase())) {
+                        chosen = entry.getValue();
+                        break;
+                    }
+                }
+                b.setImage(chosen);
+                bookRepository.save(b);
+                logger.info("Updated book '{}' with image cover", b.getTitle());
+            }
+        }
+
+        for (Borrow br : borrowRepository.findAll()) {
+            if (br.getBookCover() == null || br.getBookCover().trim().isEmpty()) {
+                if (br.getBookId() != null) {
+                    Book bk = bookRepository.findById(br.getBookId()).orElse(null);
+                    if (bk != null && bk.getImage() != null && !bk.getImage().trim().isEmpty()) {
+                        br.setBookCover(bk.getImage());
+                        borrowRepository.save(br);
+                        continue;
+                    }
+                }
+                String chosen = defaultCover;
+                for (var entry : coverMap.entrySet()) {
+                    if (br.getBookTitle() != null && br.getBookTitle().toLowerCase().contains(entry.getKey().toLowerCase())) {
+                        chosen = entry.getValue();
+                        break;
+                    }
+                }
+                br.setBookCover(chosen);
+                borrowRepository.save(br);
+            }
+        }
     }
 }

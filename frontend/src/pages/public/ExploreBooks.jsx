@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { bookService } from "../../services/bookService";
+import { bookService, getBookCoverUrl, DEFAULT_BOOK_COVER } from "../../services/bookService";
 import { categoryService } from "../../services/categoryService";
 import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../components/Toast";
@@ -244,18 +244,12 @@ export default function ExploreBooks() {
                 <div>
                   <div className="h-64 bg-slate-900 relative overflow-hidden flex items-center justify-center">
                     <img
-                      src={
-                        book.image?.startsWith("http")
-                          ? book.image
-                          : book.image
-                          ? `http://localhost:8081${book.image}`
-                          : "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop"
-                      }
+                      src={getBookCoverUrl(book.image, book.title)}
                       alt={book.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop";
+                        e.target.src = DEFAULT_BOOK_COVER;
                       }}
                     />
 

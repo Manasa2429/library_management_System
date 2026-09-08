@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { bookService } from "../../services/bookService";
+import { bookService, getBookCoverUrl, DEFAULT_BOOK_COVER } from "../../services/bookService";
 import { authorService } from "../../services/authorService";
 import { categoryService } from "../../services/categoryService";
 import { useToast } from "../../components/Toast";
@@ -239,11 +239,7 @@ export default function AdminBooks() {
               <tbody className="divide-y divide-slate-800/80">
                 {filteredBooks.map((book) => {
                   const isAvailable = Math.min(book.availableCopies ?? 0, book.totalCopies ?? 0) > 0;
-                  const coverImg = book.image?.startsWith("http")
-                    ? book.image
-                    : book.image
-                    ? `http://localhost:8081${book.image}`
-                    : "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop";
+                  const coverImg = getBookCoverUrl(book.image, book.title);
 
                   return (
                     <tr key={book.id} className="hover:bg-slate-800/50 transition">
@@ -256,7 +252,7 @@ export default function AdminBooks() {
                               className="w-full h-full object-cover"
                               onError={(e) => {
                                 e.target.onerror = null;
-                                e.target.src = "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop";
+                                e.target.src = DEFAULT_BOOK_COVER;
                               }}
                             />
                           </div>

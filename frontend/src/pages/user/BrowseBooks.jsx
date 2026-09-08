@@ -210,22 +210,15 @@ export default function BrowseBooks() {
               >
                 <div>
                   <div className="h-56 bg-slate-100 relative overflow-hidden flex items-center justify-center">
-                    {book.image ? (
-                      <img
-                        src={getBookCoverUrl(book.image)}
-                        alt={book.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = DEFAULT_BOOK_COVER;
-                        }}
-                      />
-                    ) : (
-                      <div className="text-slate-400 text-sm flex flex-col items-center gap-2">
-                        <BookOpenIcon className="w-10 h-10 text-slate-300" />
-                        <span>No Cover</span>
-                      </div>
-                    )}
+                    <img
+                      src={getBookCoverUrl(book.image, book.title)}
+                      alt={book.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = DEFAULT_BOOK_COVER;
+                      }}
+                    />
 
                     {/* Stock status badge */}
                     <span

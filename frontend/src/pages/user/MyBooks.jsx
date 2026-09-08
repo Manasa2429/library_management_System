@@ -128,19 +128,15 @@ export default function MyBooks() {
                 >
                   <div className="flex gap-4">
                     <div className="w-20 h-28 bg-slate-100 rounded-2xl overflow-hidden shrink-0 flex items-center justify-center">
-                      {b.bookCover ? (
-                        <img
-                          src={getBookCoverUrl(b.bookCover)}
-                          alt={b.bookTitle}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = DEFAULT_BOOK_COVER;
-                          }}
-                        />
-                      ) : (
-                        <BookOpenIcon className="w-8 h-8 text-slate-300" />
-                      )}
+                      <img
+                        src={getBookCoverUrl(b.bookCover, b.bookTitle)}
+                        alt={b.bookTitle}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = DEFAULT_BOOK_COVER;
+                        }}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 mb-1">

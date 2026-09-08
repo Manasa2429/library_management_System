@@ -71,19 +71,15 @@ export default function Favorites() {
             >
               <div>
                 <div className="h-48 bg-slate-100 relative overflow-hidden flex items-center justify-center">
-                  {book.image ? (
-                    <img
-                      src={getBookCoverUrl(book.image)}
-                      alt={book.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = DEFAULT_BOOK_COVER;
-                      }}
-                    />
-                  ) : (
-                    <BookOpenIcon className="w-10 h-10 text-slate-300" />
-                  )}
+                  <img
+                    src={getBookCoverUrl(book.image, book.title)}
+                    alt={book.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = DEFAULT_BOOK_COVER;
+                    }}
+                  />
                   <button
                     onClick={() => handleRemove(book.id)}
                     className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 text-rose-500 shadow-sm flex items-center justify-center hover:scale-110 transition"
