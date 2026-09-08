@@ -15,7 +15,12 @@ dist/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/.env
+# ===== Environment Variables & Secrets =====
+.env
+.env.local
+.env.*
+!.env.example
+
 
 # ===== OS / Editor Files =====
 .DS_Store
@@ -23,3 +28,10 @@ Thumbs.db
 
 # ===== Uploads / Local Assets =====
 uploads/
+data/
+
+.env
+backend/.env
+node_modules/
+dist/
+.netlify/

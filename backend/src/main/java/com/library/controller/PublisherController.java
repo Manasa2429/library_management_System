@@ -1,7 +1,10 @@
 package com.library.controller;
 
 import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,59 +13,44 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.library.model.Publisher;
-import com.library.repository.PublisherRepository;
+import com.library.security.UserDetailsImpl;
+import com.library.service.PublisherService;
 
 @RestController
 @RequestMapping("/api/publishers")
-// @CrossOrigin(origins = "http://localhost:3000")
 public class PublisherController {
 
-    private final PublisherRepository publisherRepository;
+    @Autowired
+    private PublisherService publisherService;
 
-    public PublisherController(PublisherRepository publisherRepository) {
-        this.publisherRepository = publisherRepository;
-    }
-
-    // GET all publishers
     @GetMapping
     public List<Publisher> getAllPublishers() {
-        return publisherRepository.findAll();
+        return publisherService.getAllPublishers();
     }
 
-    // GET publisher by ID
     @GetMapping("/{id}")
-    public Publisher getPublisherById(@PathVariable int id) {
-        return publisherRepository.findById(id).orElse(null);
+    public Publisher getPublisherById(@PathVariable String id) {
+        return publisherService.getPublisherById(id);
     }
 
-    // POST a new publisher
     @PostMapping
-    public Publisher addPublisher(@RequestBody Publisher publisher) {
-        return publisherRepository.save(publisher);
-        
+    @PreAuthorize("hasRole('ADMIN')")
+    public Publisher addPublisher(@RequestBody Publisher publisher, @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        return publisherService.addPublisher(publisher, adminDetails.getEmail(), adminDetails.getId());
     }
 
-    // PUT update publisher
     @PutMapping("/{id}")
-    public Publisher updatePublisher(@PathVariable int id, @RequestBody Publisher publisher) {
-        Publisher crntCat=publisherRepository.findById(id).orElse(null);
-        if(crntCat!=null){
-            
-            // crntCat.setId(publisher.getId());
-            crntCat.setName(publisher.getName());
-            crntCat.setBio(publisher.getBio());
-            return publisherRepository.save(crntCat);
-
-        }else{
-            return null;
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public Publisher updatePublisher(@PathVariable String id, @RequestBody Publisher publisher,
+                                     @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        return publisherService.updatePublisher(id, publisher, adminDetails.getEmail(), adminDetails.getId());
     }
 
-    // DELETE publisher
     @DeleteMapping("/{id}")
-    public void deletePublisher(@PathVariable int id) {
-        publisherRepository.deleteById(id);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deletePublisher(@PathVariable String id, @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        publisherService.deletePublisher(id, adminDetails.getEmail(), adminDetails.getId());
+        return ResponseEntity.ok("Publisher deleted successfully");
     }
 }

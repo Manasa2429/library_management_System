@@ -1,12 +1,6 @@
 package com.library.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.data.mongodb.repository.MongoRepository;
 import com.library.model.School;
 
-public interface SchoolRepository extends JpaRepository<School, Integer> {
-    
-}
-
-
-    
+public interface SchoolRepository extends MongoRepository<School, String> {}

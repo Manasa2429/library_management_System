@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./HomePage.css"; // your custom CSS
+import { getBookCoverUrl, DEFAULT_BOOK_COVER } from "../services/bookService";
 
 function HomePage() {
   const [books, setBooks] = useState([]);
@@ -66,9 +67,13 @@ function HomePage() {
                 {/* Book Image */}
                 {book.image ? (
                   <img
-                    src={book.image ? `http://localhost:8081${book.image}` : "/no-image.png"}
+                    src={getBookCoverUrl(book.image)}
                     alt={book.title}
                     style={{ width: "100%", height: "250px", objectFit: "cover" }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = DEFAULT_BOOK_COVER;
+                    }}
                   />
                 ) : (
                   <div

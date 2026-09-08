@@ -1,55 +1,45 @@
 package com.library.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "publishers")
+@Document(collection = "publishers")
 public class Publisher {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-
-    @Column(nullable = false)
+    private String id;
     private String name;
-
     private String bio;
 
-    // Constructors
+    @CreatedDate
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     public Publisher() {}
+
+    public Publisher(String id, String name, String bio) {
+        this.id = id;
+        this.name = name;
+        this.bio = bio;
+        this.createdAt = LocalDateTime.now();
+    }
 
     public Publisher(String name, String bio) {
         this.name = name;
         this.bio = bio;
+        this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public int getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public String getName() {
-        return name;
-    }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

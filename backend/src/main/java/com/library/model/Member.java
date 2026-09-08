@@ -1,34 +1,29 @@
 package com.library.model;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name = "members")
+@Document(collection = "members")
 public class Member {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private String id;
 
-    @Column(nullable = false)
     private String name;
-
-    @Column(unique = true)
     private String email;
-
     private String phone;
-
-    @Column(columnDefinition = "TEXT")
     private String address;
-    
-    @JsonProperty("membership_date") 
-    @Column(name = "membership_date")
+
+    @JsonProperty("membership_date")
     private LocalDate membershipDate;
 
-    // Constructors
+    @CreatedDate
+    private LocalDateTime createdAt = LocalDateTime.now();
+
     public Member() {}
 
     public Member(String name, String email, String phone, String address, LocalDate membershipDate) {
@@ -36,12 +31,12 @@ public class Member {
         this.email = email;
         this.phone = phone;
         this.address = address;
-        this.membershipDate = membershipDate;
+        this.membershipDate = membershipDate != null ? membershipDate : LocalDate.now();
+        this.createdAt = LocalDateTime.now();
     }
 
-    // Getters and Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
@@ -57,4 +52,7 @@ public class Member {
 
     public LocalDate getMembershipDate() { return membershipDate; }
     public void setMembershipDate(LocalDate membershipDate) { this.membershipDate = membershipDate; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

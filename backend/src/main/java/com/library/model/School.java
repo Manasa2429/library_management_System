@@ -1,43 +1,27 @@
 package com.library.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-@Entity
-@Table(name="school")
+@Document(collection = "school")
 public class School {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
-
-    @Column(nullable=false)
+    private String id;
     private String name;
 
-    public School(){}
+    public School() {}
 
-    public School(int id,String name){
-        this.id=id;
-        this.name=name;
-    }
-
-    public int getId(){
-        return id;
-    }
-    public void putId(int id){
-        this.id=id;
+    public School(String id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    public String getName(){
-        return name;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public void putId(String id) { this.id = id; }
 
-    public void putName(String name){
-        this.name=name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+    public void putName(String name) { this.name = name; }
 }
-

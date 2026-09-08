@@ -1,12 +1,10 @@
 package com.library.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import com.library.model.BorrowRecord;
 
-public interface BorrowRecordRepository extends JpaRepository<BorrowRecord, Integer> {
-    @Query("SELECT b FROM BorrowRecord b WHERE b.book.id = :bookId AND b.status = 'BORROWED' ORDER BY b.borrowDate DESC")
-    BorrowRecord findFirstByBookIdOrderByBorrowDateDesc(@Param("bookId") int bookId);
+public interface BorrowRecordRepository extends MongoRepository<BorrowRecord, String> {
+    @Query(value = "{ 'book.id': ?0, 'status': 'BORROWED' }", sort = "{ 'borrowDate': -1 }")
+    BorrowRecord findFirstByBookIdOrderByBorrowDateDesc(String bookId);
 }

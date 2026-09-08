@@ -1,7 +1,10 @@
 package com.library.controller;
 
 import java.util.List;
-
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -10,61 +13,49 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.library.model.Category;
-import com.library.repository.CategoryRepository;
+import com.library.security.UserDetailsImpl;
+import com.library.service.CategoryService;
 
 @RestController
 @RequestMapping("/api/categories")
-// @CrossOrigin(origins = "http://localhost:3000")
 public class CategoryController {
 
-    private final CategoryRepository categoryRepository;
+    @Autowired
+    private CategoryService categoryService;
 
-    public CategoryController(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
-    }
-
-    // GET all categories
     @GetMapping
     public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+        return categoryService.getAllCategories();
     }
 
-    // GET category by ID
+    @GetMapping("/with-counts")
+    public ResponseEntity<?> getAllCategoriesWithCounts() {
+        return ResponseEntity.ok(categoryService.getAllCategoriesWithBookCounts());
+    }
+
     @GetMapping("/{id}")
-    public Category getCategoryById(@PathVariable int id) {
-        return categoryRepository.findById(id).orElse(null);
+    public Category getCategoryById(@PathVariable String id) {
+        return categoryService.getCategoryById(id);
     }
 
-    // POST a new category
     @PostMapping
-    public Category addCategory(@RequestBody Category category) {
-        return categoryRepository.save(category);
-        
+    @PreAuthorize("hasRole('ADMIN')")
+    public Category addCategory(@RequestBody Category category, @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        return categoryService.addCategory(category, adminDetails.getEmail(), adminDetails.getId());
     }
 
-    // PUT update category
     @PutMapping("/{id}")
-    public Category updateCategory(@PathVariable int id, @RequestBody Category category) {
-        Category crntCat=categoryRepository.findById(id).orElse(null);
-        if(crntCat!=null){
-            
-            // crntCat.setId(category.getId());
-            crntCat.setName(category.getName());
-            crntCat.setDescription(category.getDescription());
-            return categoryRepository.save(crntCat);
-
-        }else{
-            return null;
-        }
-        
+    @PreAuthorize("hasRole('ADMIN')")
+    public Category updateCategory(@PathVariable String id, @RequestBody Category category,
+                                   @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        return categoryService.updateCategory(id, category, adminDetails.getEmail(), adminDetails.getId());
     }
 
-    // DELETE category
     @DeleteMapping("/{id}")
-    public void deleteCategory(@PathVariable int id) {
-        categoryRepository.deleteById(id);
-        
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteCategory(@PathVariable String id, @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        categoryService.deleteCategory(id, adminDetails.getEmail(), adminDetails.getId());
+        return ResponseEntity.ok("Category deleted successfully");
     }
 }

@@ -6,7 +6,7 @@ function Navbar(){
        <nav className="navbar navbar-expand-lg navbar-dark bg-dark" id="Navbar">
             <Link className="navbar-brand d-flex align-items-center" to="/" style={{ paddingLeft: "10px" }}>
             <i className="bi bi-book-half" style={{ fontSize: "1.5rem", marginRight: "8px" }}></i>
-            📚 Netaji Library
+            📚 SmartLibrary
             </Link>
 
             <ul className="navbar-nav ms-auto">

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { getBookCoverUrl, DEFAULT_BOOK_COVER } from "../services/bookService";
 
 function BookDetailsPage() {
   const { id } = useParams();
@@ -40,9 +41,13 @@ function BookDetailsPage() {
         <div className="col-md-4 mb-3">
           {book.image ? (
             <img
-              src={`http://localhost:8081${book.image}`}
+              src={getBookCoverUrl(book.image)}
               alt={book.title}
               className="img-fluid rounded shadow-sm"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = DEFAULT_BOOK_COVER;
+              }}
             />
           ) : (
             <div

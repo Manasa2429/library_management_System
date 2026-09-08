@@ -1,6 +1,11 @@
 package com.library.repository;
 
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import com.library.model.Publisher;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PublisherRepository extends JpaRepository<Publisher, Integer> {}
+public interface PublisherRepository extends MongoRepository<Publisher, String> {
+    List<Publisher> findByNameContainingIgnoreCase(String name);
+    Optional<Publisher> findByNameIgnoreCase(String name);
+}

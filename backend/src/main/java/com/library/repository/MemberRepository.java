@@ -1,7 +1,6 @@
 package com.library.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
+import org.springframework.data.mongodb.repository.MongoRepository;
 import com.library.model.Member;
 
-public interface MemberRepository extends JpaRepository<Member, Integer> {}
+public interface MemberRepository extends MongoRepository<Member, String> {}

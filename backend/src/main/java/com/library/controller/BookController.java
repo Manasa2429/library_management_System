@@ -1,15 +1,12 @@
 package com.library.controller;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,148 +16,145 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.library.model.Book;
-import com.library.model.BorrowRecord;
-import com.library.repository.AuthorRepository;
-import com.library.repository.BookRepository;
-import com.library.repository.BorrowRecordRepository;
-import com.library.repository.CategoryRepository;
-import com.library.repository.PublisherRepository;
+import com.library.model.Borrow;
+import com.library.repository.BorrowRepository;
+import com.library.security.UserDetailsImpl;
+import com.library.service.BookService;
 
 @RestController
 @RequestMapping("/api/books")
-@CrossOrigin(origins = "http://localhost:3000")
 public class BookController {
 
-    private final BookRepository bookRepository;
-    private final AuthorRepository authorRepository;
-    private final PublisherRepository publisherRepository;
-    private final CategoryRepository categoryRepository;
-    private final BorrowRecordRepository borrowRecordRepository;
+    @Autowired
+    private BookService bookService;
 
-    private static final String UPLOAD_DIR = System.getProperty("user.dir") + "/uploads";
+    @Autowired
+    private BorrowRepository borrowRepository;
 
-    public BookController(BookRepository bookRepository,
-                          AuthorRepository authorRepository,
-                          PublisherRepository publisherRepository,
-                          CategoryRepository categoryRepository,
-                          BorrowRecordRepository borrowRecordRepository) {
-        this.bookRepository = bookRepository;
-        this.authorRepository = authorRepository;
-        this.publisherRepository = publisherRepository;
-        this.categoryRepository = categoryRepository;
-        this.borrowRecordRepository = borrowRecordRepository;
+    @Autowired
+    private com.library.config.DatabaseSeeder databaseSeeder;
+
+    @PostMapping("/seed-samples")
+    public ResponseEntity<?> seedSampleBooks() {
+        return ResponseEntity.ok(databaseSeeder.seedSampleBooks());
     }
 
-    // ✅ Get all books
     @GetMapping
     public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+        return bookService.getAllBooks();
     }
+
     @GetMapping("/search")
     public List<Book> searchBooks(@RequestParam("q") String keyword) {
-        return bookRepository.searchBooks(keyword);
+        return bookService.searchBooks(keyword);
     }
-    
-    // ✅ Get single book (with borrow info)
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBookById(@PathVariable int id) {
-        Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        BorrowRecord borrowed = borrowRecordRepository.findFirstByBookIdOrderByBorrowDateDesc(id);
+    @GetMapping("/featured")
+    public List<Book> getFeaturedBooks() {
+        return bookService.getFeaturedBooks();
+    }
+
+    @GetMapping("/recent")
+    public List<Book> getRecentBooks() {
+        return bookService.getRecentBooks();
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public List<Book> getBooksByCategory(@PathVariable String categoryId) {
+        return bookService.getBooksByCategory(categoryId);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getBookById(@PathVariable String id) {
+        Book book = bookService.getBookById(id);
+
+        List<Borrow> activeBorrows = borrowRepository.findByBookIdAndStatus(id, Borrow.Status.BORROWED);
+        Borrow latestBorrow = activeBorrows.isEmpty() ? null : activeBorrows.get(0);
 
         Map<String, Object> response = new HashMap<>();
         response.put("id", book.getId());
         response.put("title", book.getTitle());
+        response.put("isbn", book.getIsbn());
         response.put("description", book.getDescription());
         response.put("image", book.getImage());
         response.put("shelf", book.getShelf());
+        response.put("publicationYear", book.getPublicationYear());
+        response.put("totalCopies", book.getTotalCopies());
+        response.put("availableCopies", book.getAvailableCopies());
+        response.put("featured", book.isFeatured());
         response.put("author", book.getAuthor());
         response.put("publisher", book.getPublisher());
         response.put("category", book.getCategory());
-        response.put("status", borrowed != null ? "BORROWED" : "AVAILABLE");
-        response.put("borrowedBy", borrowed != null ? borrowed.getMember().getName() : null);
+        response.put("authorName", book.getAuthorName());
+        response.put("publisherName", book.getPublisherName());
+        response.put("categoryName", book.getCategoryName());
+        response.put("authorId", book.getAuthorId());
+        response.put("publisherId", book.getPublisherId());
+        response.put("categoryId", book.getCategoryId());
+        response.put("status", book.getAvailableCopies() > 0 ? "AVAILABLE" : "OUT_OF_STOCK");
+        response.put("borrowedBy", latestBorrow != null ? latestBorrow.getUserName() : null);
 
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Add book (with optional image)
     @PostMapping(consumes = {"multipart/form-data"})
-    public String addBook(@RequestParam String title,
-                          @RequestParam(required = false) Integer authorId,
-                          @RequestParam(required = false) Integer publisherId,
-                          @RequestParam(required = false) Integer categoryId,
-                          @RequestParam(required = false) String shelf,
-                          @RequestParam(required = false) String description,
-                          @RequestParam(required = false) MultipartFile image) {
-        Book book = new Book();
-        book.setTitle(title);
-        book.setShelf(shelf);
-        book.setDescription(description);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> addBook(
+            @RequestParam String title,
+            @RequestParam(required = false) String isbn,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String shelf,
+            @RequestParam(required = false) Integer publicationYear,
+            @RequestParam(required = false) Integer totalCopies,
+            @RequestParam(required = false) Boolean featured,
+            @RequestParam(required = false) String authorId,
+            @RequestParam(required = false) String publisherId,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) MultipartFile image,
+            @AuthenticationPrincipal UserDetailsImpl adminDetails) {
 
-        authorId = setAuthorPublisherCategory(book, authorId, publisherId, categoryId);
-        handleImageUpload(book, image);
-
-        bookRepository.save(book);
-        return "Book added successfully!";
+        Book book = bookService.addBook(
+                title, isbn, description, shelf, publicationYear, totalCopies,
+                featured, authorId, publisherId, categoryId, image,
+                adminDetails.getEmail(), adminDetails.getId()
+        );
+        return ResponseEntity.ok(book);
     }
 
-    // ✅ Update book
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
-    public String updateBook(@PathVariable int id,
-                             @RequestParam String title,
-                             @RequestParam(required = false) Integer authorId,
-                             @RequestParam(required = false) Integer publisherId,
-                             @RequestParam(required = false) Integer categoryId,
-                             @RequestParam(required = false) String shelf,
-                             @RequestParam(required = false) String description,
-                             @RequestParam(required = false) MultipartFile image) {
-        Book book = bookRepository.findById(id).orElse(null);
-        if (book == null) return "Book not found!";
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> updateBook(
+            @PathVariable String id,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String isbn,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) String shelf,
+            @RequestParam(required = false) Integer publicationYear,
+            @RequestParam(required = false) Integer totalCopies,
+            @RequestParam(required = false) Integer availableCopies,
+            @RequestParam(required = false) Boolean featured,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String authorId,
+            @RequestParam(required = false) String publisherId,
+            @RequestParam(required = false) String categoryId,
+            @RequestParam(required = false) MultipartFile image,
+            @AuthenticationPrincipal UserDetailsImpl adminDetails) {
 
-        book.setTitle(title);
-        book.setShelf(shelf);
-        book.setDescription(description);
-
-        setAuthorPublisherCategory(book, authorId, publisherId, categoryId);
-        handleImageUpload(book, image);
-
-        bookRepository.save(book);
-        return "Book updated successfully!";
+        Book updated = bookService.updateBook(
+                id, title, isbn, description, shelf, publicationYear, totalCopies,
+                availableCopies, featured, status, authorId, publisherId, categoryId,
+                image, adminDetails.getEmail(), adminDetails.getId()
+        );
+        return ResponseEntity.ok(updated);
     }
 
-    // ✅ Delete book
     @DeleteMapping("/{id}")
-    public String deleteBook(@PathVariable int id) {
-        if (!bookRepository.existsById(id)) return "Book not found!";
-        bookRepository.deleteById(id);
-        return "Book deleted successfully!";
-    }
-
-    // 🔧 Helper: assign related entities
-    private Integer setAuthorPublisherCategory(Book book, Integer authorId, Integer publisherId, Integer categoryId) {
-        if (authorId != null) authorRepository.findById(authorId).ifPresent(book::setAuthor);
-        if (publisherId != null) publisherRepository.findById(publisherId).ifPresent(book::setPublisher);
-        if (categoryId != null) categoryRepository.findById(categoryId).ifPresent(book::setCategory);
-        return authorId;
-    }
-
-    // 🔧 Helper: handle image upload
-    private void handleImageUpload(Book book, MultipartFile image) {
-        if (image != null && !image.isEmpty()) {
-            try {
-                Path uploadPath = Paths.get(UPLOAD_DIR);
-                if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
-
-                String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-                Path filePath = uploadPath.resolve(fileName);
-                Files.write(filePath, image.getBytes());
-                book.setImage("/uploads/" + fileName);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to upload image!", e);
-            }
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteBook(
+            @PathVariable String id,
+            @AuthenticationPrincipal UserDetailsImpl adminDetails) {
+        bookService.deleteBook(id, adminDetails.getEmail(), adminDetails.getId());
+        return ResponseEntity.ok(Map.of("message", "Book deleted successfully!"));
     }
 }

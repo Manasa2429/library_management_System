@@ -30,7 +30,7 @@ public class StudentController {
     }
     
     @GetMapping("{id}")
-    public Student getStudentById(@PathVariable int id){
+    public Student getStudentById(@PathVariable String id){
         return studentRepository.findById(id).orElse(null);
     }
 
@@ -40,7 +40,7 @@ public class StudentController {
     }
     
     @PutMapping("{id}")
-    public Student updateStudentById(@PathVariable int id,@RequestBody Student updateStudent){
+    public Student updateStudentById(@PathVariable String id,@RequestBody Student updateStudent){
         Student cstudent = studentRepository.findById(id).orElse(null);
         if(cstudent!=null){
             cstudent.putName(updateStudent.getName());
@@ -54,7 +54,7 @@ public class StudentController {
     }
 
     @DeleteMapping("{id}")
-    public void deleteStudent(@PathVariable int id){
+    public void deleteStudent(@PathVariable String id){
         studentRepository.deleteById(id);
     }
 

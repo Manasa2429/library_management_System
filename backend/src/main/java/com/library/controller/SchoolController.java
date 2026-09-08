@@ -29,7 +29,7 @@ public class SchoolController {
     }
 
     @GetMapping("{id}")
-    public School getSchoolById(@PathVariable int id){
+    public School getSchoolById(@PathVariable String id){
         return sr.findById(id).orElse(null);
     }
 
@@ -39,7 +39,7 @@ public class SchoolController {
     }
 
     @PutMapping("{id}")
-    public School updateSchool(@PathVariable int id,@RequestBody School s){
+    public School updateSchool(@PathVariable String id,@RequestBody School s){
         School cs=sr.findById(id).orElse(null);
         if(cs!=null){
             cs.putName(s.getName());
@@ -51,7 +51,7 @@ public class SchoolController {
     }
 
     @DeleteMapping("{id}")
-    public void deleteSchool(@PathVariable int id){
+    public void deleteSchool(@PathVariable String id){
         sr.deleteById(id);
     }
     
