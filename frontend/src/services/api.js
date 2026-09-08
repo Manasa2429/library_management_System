@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8081/api";
+let rawUrl = process.env.REACT_APP_API_URL || "https://library-management-system-zrup.onrender.com/api";
+if (!rawUrl.endsWith("/api")) {
+  rawUrl = rawUrl.replace(/\/+$/, "") + "/api";
+}
+const API_BASE_URL = rawUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
